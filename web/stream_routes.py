@@ -395,9 +395,10 @@ async def get_file_info_api(request):
             else:
                 file_type = 'document'
             
-            # Generate URLs
-            stream_url = f"{URL}watch/{secure_hash}_{msg_id}" if secure_hash else f"{URL}watch/{msg_id}"
-            download_url = f"{URL}dl/{secure_hash}_{msg_id}" if secure_hash else f"{URL}dl/{msg_id}"
+            # Generate URLs - use bot's Render URL for actual video content
+            bot_url = "https://camgrabber.onrender.com"
+            stream_url = f"{bot_url}/watch/{secure_hash}_{msg_id}" if secure_hash else f"{bot_url}/watch/{msg_id}"
+            download_url = f"{bot_url}/dl/{secure_hash}_{msg_id}" if secure_hash else f"{bot_url}/dl/{msg_id}"
             
             return web.json_response({
                 "success": True,
