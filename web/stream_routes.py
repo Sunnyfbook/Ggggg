@@ -245,6 +245,100 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
 #This Repo Is By @BOT_OWNER26 
 # For Any Kind Of Error Ask Us In Support Group @AV_SUPPORT_GROUP
 
+# Streaming and Download Routes for Netlify Integration
+
+@routes.get("/watch/{file_id}")
+async def watch_file(request):
+    """Stream video files"""
+    try:
+        file_id = request.match_info["file_id"]
+        
+        # Parse file ID and hash
+        if "_" in file_id:
+            # Format: hash_id (e.g., abc123_123456)
+            parts = file_id.split("_")
+            if len(parts) == 2:
+                secure_hash, msg_id = parts
+                msg_id = int(msg_id)
+            else:
+                return web.Response(status=404, text="Invalid file ID format")
+        else:
+            # Format: just ID
+            msg_id = int(file_id)
+            secure_hash = None
+        
+        # Get file info from BIN_CHANNEL
+        try:
+            message = await app.get_messages(BIN_CHANNEL, msg_id)
+            if not message:
+                return web.Response(status=404, text="File not found")
+            
+            # Get file properties
+            file_props = await get_file_properties(message)
+            if not file_props:
+                return web.Response(status=404, text="File properties not found")
+            
+            # Verify hash if provided
+            if secure_hash and file_props.unique_id[:6] != secure_hash:
+                return web.Response(status=404, text="Invalid file hash")
+            
+            # Stream the file
+            return await media_streamer(request, msg_id, secure_hash or file_props.unique_id[:6])
+            
+        except Exception as e:
+            logging.error(f"Error streaming file: {e}")
+            return web.Response(status=500, text="Internal server error")
+            
+    except Exception as e:
+        logging.error(f"Watch route error: {e}")
+        return web.Response(status=400, text="Invalid request")
+
+@routes.get("/dl/{file_id}")
+async def download_file(request):
+    """Download files"""
+    try:
+        file_id = request.match_info["file_id"]
+        
+        # Parse file ID and hash
+        if "_" in file_id:
+            # Format: hash_id (e.g., abc123_123456)
+            parts = file_id.split("_")
+            if len(parts) == 2:
+                secure_hash, msg_id = parts
+                msg_id = int(msg_id)
+            else:
+                return web.Response(status=404, text="Invalid file ID format")
+        else:
+            # Format: just ID
+            msg_id = int(file_id)
+            secure_hash = None
+        
+        # Get file info from BIN_CHANNEL
+        try:
+            message = await app.get_messages(BIN_CHANNEL, msg_id)
+            if not message:
+                return web.Response(status=404, text="File not found")
+            
+            # Get file properties
+            file_props = await get_file_properties(message)
+            if not file_props:
+                return web.Response(status=404, text="File properties not found")
+            
+            # Verify hash if provided
+            if secure_hash and file_props.unique_id[:6] != secure_hash:
+                return web.Response(status=404, text="Invalid file hash")
+            
+            # Download the file
+            return await media_streamer(request, msg_id, secure_hash or file_props.unique_id[:6])
+            
+        except Exception as e:
+            logging.error(f"Error downloading file: {e}")
+            return web.Response(status=500, text="Internal server error")
+            
+    except Exception as e:
+        logging.error(f"Download route error: {e}")
+        return web.Response(status=400, text="Invalid request")
+
 # API Endpoints for Netlify Integration
 
 @routes.get("/api/file/{file_id}")
