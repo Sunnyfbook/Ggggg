@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src='//libtl.com/sdk.js' data-zone='9632653' data-sdk='show_9632653'></script>
+    <meta name="monetag" content="5cd789660451ddecc25d6f0317bf7c3c">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{file_name}} | {{name}}</title>
+    
+    <!-- Head scripts from admin panel -->
+    {{ head|safe }}
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 0.8rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-text {
+            font-weight: 700;
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .video-container {
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-name-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .file-name-text {
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            word-break: break-word;
+        }
+
+        .telegram-btn {
+            background: linear-gradient(135deg, #0088cc 0%, #00a0e4 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .ad-container {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60px;
+            position: relative;
+        }
+
+        .ad-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .container {
+            padding: 0 10px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .py-4 {
+            padding: 1rem 0;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            background-color: #198754;
+        }
+
+        .text-secondary {
+            color: #b3b3b3;
+        }
+
+        @media (max-width: 768px) {
+            .ad-container {
+                min-height: 50px;
+                padding: 8px;
+                margin: 10px 0;
+            }
+
+            .file-name-text {
+                font-size: 0.9rem;
+            }
+
+            .brand-text {
+                font-size: 1.2rem;
+            }
+
+            .navbar {
+                padding: 0.6rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div id="mainContent">
+        <header>
+            <nav class="navbar">
+                <a class="brand-text" href="{{link}}">
+                    {{name}}
+                </a>
+                <span class="badge">🟢 LIVE</span>
+            </nav>
+        </header>
+
+        <main class="container">
+            <div class="ad-container" id="topAd">
+                {{ top | safe }}
+            </div>
+
+            <div class="file-name-container">
+                <h1 class="file-name-text" id="fileName">
+                    {{file_name}}
+                </h1>
+            </div>
+
+            <div class="ad-container" id="preVideoAd">
+                {{ pre_video | safe }}
+            </div>
+
+            <div class="video-container">
+                <video id="player" class="player" playsinline controls>
+                    {% if file_url %}
+                    <source src="{{file_url}}" type="video/mp4" size="480">
+                    {% endif %}
+                    {% if file_url_two %}
+                    <source src="{{file_url_two}}" type="video/mp4" size="720">
+                    {% endif %}
+                    {% if file_url_three %}
+                    <source src="{{file_url_three}}" type="video/mp4" size="1080">
+                    {% endif %}
+                </video>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{link}}" target="_blank" class="telegram-btn">
+                    📱 Join Our Telegram Channel
+                </a>
+            </div>
+
+            <div class="ad-container" id="postVideoAd">
+                {{ post_video | safe }}
+            </div>
+
+            <div class="ad-container" id="mobileAd">
+                {{ mobile | safe }}
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="ad-container" id="footerAd">
+                {{ footer | safe }}
+            </div>
+
+            <div class="text-center py-4">
+                <p class="mb-2">
+                    © <span id="currentYear"></span> Copyright : 
+                    <a href="{{link}}" class="brand-text" style="font-size: 0.9rem;">{{name}}</a>
+                </p>
+                <p class="text-secondary">All Rights Reserved</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading overlay
+            const overlayDelay = isMobile ? 300 : 800;
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 200);
+            }, overlayDelay);
+
+            // Set current year
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Truncate file name
+            const fileNameElement = document.getElementById('fileName');
+            if (fileNameElement && fileNameElement.textContent.length > 50) {
+                fileNameElement.textContent = fileNameElement.textContent.slice(0, 50) + '...';
+            }
+
+            // Execute ad scripts
+            function executeAdScripts() {
+                document.querySelectorAll('.ad-container').forEach(function(container) {
+                    container.querySelectorAll('script').forEach(function(oldScript) {
+                        if (oldScript.dataset.executed) return;
+                        
+                        const newScript = document.createElement('script');
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                        } else {
+                            newScript.textContent = oldScript.textContent;
+                        }
+                        
+                        oldScript.dataset.executed = 'true';
+                        document.head.appendChild(newScript);
+                    });
+                });
+            }
+
+            if (isMobile) {
+                executeAdScripts();
+                setTimeout(executeAdScripts, 50);
+                setTimeout(executeAdScripts, 200);
+                setTimeout(executeAdScripts, 500);
+                document.addEventListener('touchstart', executeAdScripts, { once: true });
+                document.addEventListener('scroll', executeAdScripts, { once: true });
+            } else {
+                setTimeout(executeAdScripts, 500);
+            }
+        });
+
+        // Disable right-click
+        document.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
