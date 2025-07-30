@@ -179,7 +179,8 @@ async def media_streamer(request: web.Request, id: int, secure_hash: str):
     file_id = await tg_connect.get_file_properties(id)
     logging.debug("after calling get_file_properties")
     
-    if file_id.unique_id[:6] != secure_hash:
+    # Verify hash if provided
+    if secure_hash and file_id.unique_id[:6] != secure_hash:
         logging.debug(f"Invalid hash for message with ID {id}")
         raise InvalidHash
     
@@ -269,12 +270,15 @@ async def watch_file(request):
         
         # Get file info from BIN_CHANNEL
         try:
-            message = await app.get_messages(BIN_CHANNEL, msg_id)
+            index = min(work_loads, key=work_loads.get)
+            faster_client = multi_clients[index]
+            
+            message = await faster_client.get_messages(BIN_CHANNEL, msg_id)
             if not message:
                 return web.Response(status=404, text="File not found")
             
             # Get file properties
-            file_props = await get_file_properties(message)
+            file_props = await get_file_ids(faster_client, BIN_CHANNEL, msg_id)
             if not file_props:
                 return web.Response(status=404, text="File properties not found")
             
@@ -315,12 +319,15 @@ async def download_file(request):
         
         # Get file info from BIN_CHANNEL
         try:
-            message = await app.get_messages(BIN_CHANNEL, msg_id)
+            index = min(work_loads, key=work_loads.get)
+            faster_client = multi_clients[index]
+            
+            message = await faster_client.get_messages(BIN_CHANNEL, msg_id)
             if not message:
                 return web.Response(status=404, text="File not found")
             
             # Get file properties
-            file_props = await get_file_properties(message)
+            file_props = await get_file_ids(faster_client, BIN_CHANNEL, msg_id)
             if not file_props:
                 return web.Response(status=404, text="File properties not found")
             
