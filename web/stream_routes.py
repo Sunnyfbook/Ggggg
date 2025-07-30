@@ -20,116 +20,15 @@ routes = web.RouteTableDef()
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(_):
-    # Fetch all ad codes from MongoDB
-    from database.users_db import ads_config
-    ads = await ads_config.get_ads()
-    def ad_div(slot):
-        return f"<div class='ad-container'>{ads.get(slot, '')}</div>"
-    ad_html = (
-        ad_div('top') +
-        ad_div('pre_video') +
-        ad_div('post_video') +
-        ad_div('sidebar1') +
-        ad_div('sidebar2') +
-        ad_div('mobile') +
-        ad_div('footer')
-    )
-    return web.Response(text=f"""
-    <!DOCTYPE html>
-    <html lang='en'>
-    <head>
-        <meta charset='UTF-8'>
-        <title>Free Online Video Downloader</title>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <style>
-            body {{ background: #181818; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 0; }}
-            .container {{ max-width: 500px; margin: 5em auto; background: #232323; padding: 2em; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }}
-            h1 {{ text-align: center; margin-bottom: 1em; }}
-            input[type=url] {{ width: 100%; padding: 0.7em; border-radius: 6px; border: none; margin-bottom: 1em; font-size: 1em; }}
-            button {{ width: 100%; padding: 0.7em; border-radius: 6px; border: none; background: #4f8cff; color: #fff; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background 0.2s; }}
-            button:hover {{ background: #357ae8; }}
-            .info {{ margin-top: 2em; font-size: 0.95em; color: #b3b3b3; text-align: center; }}
-            .ad-container {{ background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); padding: 10px; margin-bottom: 1.5em; text-align: center; }}
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            {ad_html}
-            <h1>Free Online Video Downloader</h1>
-            <form onsubmit='return false;'>
-                <input type='url' placeholder='Paste video URL here...' required disabled>
-                <button disabled>Download</button>
-            </form>
-            <div class='info'>
-                Download videos from YouTube, Facebook, Instagram, Twitter, and more!<br>
-                No registration required. Fast & free.
-            </div>
-        </div>
-        <script>
-        // Loader to execute scripts injected via admin panel
-        document.querySelectorAll('.ad-container').forEach(function(container) {{
-            container.querySelectorAll('script').forEach(function(oldScript) {{
-                const newScript = document.createElement('script');
-                if (oldScript.src) {{
-                    newScript.src = oldScript.src;
-                }} else {{
-                    newScript.textContent = oldScript.textContent;
-                }}
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            }});
-        }});
-        </script>
-    </body>
-    </html>
-    """, content_type='text/html')
+    """API-only endpoint - web interface moved to Netlify"""
+    return web.json_response({
+        "message": "API Server Running",
+        "status": "healthy",
+        "web_interface": "https://your-site-name.netlify.app"
+    })
 
-@routes.get(r"/watch/{path:\S+}", allow_head=True)
-async def stream_handler(request: web.Request):
-    try:
-        path = request.match_info["path"]
-        match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
-        if match:
-            secure_hash = match.group(1)
-            id = int(match.group(2))
-        else:
-            id = int(re.search(r"(\d+)(?:\/\S+)?", path).group(1))
-            secure_hash = request.rel_url.query.get("hash")
-        return web.Response(text=await render_page(id, secure_hash), content_type='text/html')
-    except InvalidHash as e:
-        raise web.HTTPForbidden(text=e.message)
-    except FIleNotFound as e:
-        raise web.HTTPNotFound(text=e.message)
-    except (AttributeError, BadStatusLine, ConnectionResetError):
-        pass
-    except Exception as e:
-        logging.critical(e.with_traceback(None))
-        raise web.HTTPInternalServerError(text=str(e))
-
-#Dont Remove My Credit @AV_BOTz_UPDATE 
-#This Repo Is By @BOT_OWNER26 
-# For Any Kind Of Error Ask Us In Support Group @AV_SUPPORT_GROUP
-
-@routes.get(r"/{path:\S+}", allow_head=True)
-async def stream_handler(request: web.Request):
-    try:
-        path = request.match_info["path"]
-        match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
-        if match:
-            secure_hash = match.group(1)
-            id = int(match.group(2))
-        else:
-            id = int(re.search(r"(\d+)(?:\/\S+)?", path).group(1))
-            secure_hash = request.rel_url.query.get("hash")
-        return await media_streamer(request, id, secure_hash)
-    except InvalidHash as e:
-        raise web.HTTPForbidden(text=e.message)
-    except FIleNotFound as e:
-        raise web.HTTPNotFound(text=e.message)
-    except (AttributeError, BadStatusLine, ConnectionResetError):
-        pass
-    except Exception as e:
-        logging.critical(e.with_traceback(None))
-        raise web.HTTPInternalServerError(text=str(e))
+# Web interface routes removed - moved to Netlify
+# Only API endpoints remain for Netlify to use
 
 @routes.get('/sw.js')
 async def monetag_sw(request):

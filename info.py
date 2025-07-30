@@ -12,7 +12,7 @@ SESSION = environ.get('SESSION', 'Webavbot')
 API_ID = int(environ.get('API_ID', '1357592'))
 API_HASH = environ.get('API_HASH', '7a0b3567c813916acafaa69bf8989f12')
 BOT_TOKEN = environ.get('BOT_TOKEN', "8125185327:AAHqKXZxSg9GthfRX6VSg52aJ5Ik0bJzgAY")
-BOT_USERNAME = environ.get("BOT_USERNAME", 'ViralMMs2035_bot') # without @ 
+BOT_USERNAME = environ.get("BOT_USERNAME", 'CamGrabberInsta_bot') # without @ 
 
 # Admins, Channels & Users
 BIN_CHANNEL = int(environ.get("BIN_CHANNEL", '-1002679595778')) # admin your channel in stream 
@@ -82,12 +82,15 @@ if 'DYNO' in environ:
     APP_NAME = str(getenv('APP_NAME')) #dont need to fill anything here
 else:
     ON_HEROKU = False
-FQDN = str(getenv('FQDN', BIND_ADDRESS)) if not ON_HEROKU or getenv('FQDN', '') else APP_NAME+'.herokuapp.com'
-HAS_SSL=bool(getenv('HAS_SSL',False))
+FQDN = str(getenv('FQDN', 'your-site-name.netlify.app')) if not ON_HEROKU or getenv('FQDN', '') else APP_NAME+'.herokuapp.com'
+HAS_SSL=bool(getenv('HAS_SSL',True))  # Changed to True for Render
 if HAS_SSL:
     URL = "https://{}/".format(FQDN)
 else:
     URL = "https://{}{}/".format(FQDN, "" if NO_PORT else ":" + str(PORT))
+
+# Netlify Web Interface URL
+NETLIFY_URL = environ.get('NETLIFY_URL', 'https://your-site-name.netlify.app')
       
 #Dont Remove My Credit @AV_BOTz_UPDATE 
 #This Repo Is By @BOT_OWNER26 

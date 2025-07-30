@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
-from info import URL, BOT_USERNAME, BIN_CHANNEL, BAN_ALERT, FSUB, CHANNEL, SHORTLINK
+from info import URL, BOT_USERNAME, BIN_CHANNEL, BAN_ALERT, FSUB, CHANNEL, SHORTLINK, NETLIFY_URL
 from database.users_db import db
 from web.utils.file_properties import get_hash
 from utils import get_size
@@ -40,13 +40,14 @@ async def private_receive_handler(c: Client, m: Message):
         file_hash = get_hash(msg)
 
         if not SHORTLINK:
-            stream = f"{URL}watch/{msg.id}?hash={file_hash}"
-            download = f"{URL}{msg.id}?hash={file_hash}"
+            # Use Netlify URLs for streaming and download
+            stream = f"{NETLIFY_URL}/stream.html?id={file_hash}_{msg.id}"
+            download = f"{NETLIFY_URL}/download.html?id={file_hash}_{msg.id}"
             file_link = f"https://t.me/{BOT_USERNAME}?start=file_{msg.id}"
             share_link = f"https://t.me/share/url?url={file_link}"
         else:
-            stream = await get_shortlink(f"{URL}watch/{msg.id}?hash={file_hash}")
-            download = await get_shortlink(f"{URL}{msg.id}?hash={file_hash}")
+            stream = await get_shortlink(f"{NETLIFY_URL}/stream.html?id={file_hash}_{msg.id}")
+            download = await get_shortlink(f"{NETLIFY_URL}/download.html?id={file_hash}_{msg.id}")
             file_link = await get_shortlink(f"https://t.me/{BOT_USERNAME}?start=file_{msg.id}")
             share_link = await get_shortlink(f"https://t.me/share/url?url={file_link}")
 
