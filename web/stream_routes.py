@@ -37,10 +37,46 @@ async def monetag_sw(request):
     return web.Response(text=content, content_type='application/javascript')
 
 ADS_CONFIG_PATH = 'ads_config.json'
+SETTINGS_CONFIG_PATH = 'site_settings.json'
 ADMIN_PASSWORD = 'admin123'  # Change this to a secure password
 AD_SLOTS = [
     'head', 'top', 'pre_video', 'post_video', 'sidebar1', 'sidebar2', 'mobile', 'footer'
 ]
+
+# New comprehensive ad slots for the admin panel
+ADMIN_AD_SLOTS = [
+    'ads_preroll', 'ads_top', 'ads_video_preroll', 'ads_video_overlay', 
+    'ads_video_postroll', 'ads_middle', 'ads_post_reactions', 'ads_sidebar', 
+    'ads_bottom', 'ads_footer'
+]
+
+# Helper to load site settings
+async def load_site_settings():
+    try:
+        with open(SETTINGS_CONFIG_PATH, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return {
+            'site_name': 'Video Streamer',
+            'footer_text': '© 2024 Video Downloader. All rights reserved.',
+            'primary_color': '#667eea',
+            'accent_color': '#f093fb',
+            'ads_preroll': '',
+            'ads_top': '',
+            'ads_video_preroll': '',
+            'ads_video_overlay': '',
+            'ads_video_postroll': '',
+            'ads_middle': '',
+            'ads_post_reactions': '',
+            'ads_sidebar': '',
+            'ads_bottom': '',
+            'ads_footer': ''
+        }
+
+# Helper to save site settings
+async def save_site_settings(data):
+    with open(SETTINGS_CONFIG_PATH, 'w') as f:
+        json.dump(data, f, indent=2)
 
 # Helper to load ad codes
 async def load_ads_config():
@@ -54,6 +90,43 @@ async def load_ads_config():
 async def save_ads_config(data):
     with open(ADS_CONFIG_PATH, 'w') as f:
         json.dump(data, f)
+
+# New API endpoint to get all site settings
+@routes.get('/api/settings')
+async def get_site_settings(request):
+    settings = await load_site_settings()
+    return web.json_response(settings)
+
+# New API endpoint to update site settings
+@routes.post('/api/settings')
+async def update_site_settings(request):
+    try:
+        data = await request.json()
+        password = data.get('password')
+        
+        if password != ADMIN_PASSWORD:
+            return web.json_response({'error': 'Unauthorized'}, status=401)
+        
+        # Load current settings
+        current_settings = await load_site_settings()
+        
+        # Update with new data
+        for key in ['site_name', 'footer_text', 'primary_color', 'accent_color'] + ADMIN_AD_SLOTS:
+            if key in data:
+                current_settings[key] = data[key]
+        
+        # Save updated settings
+        await save_site_settings(current_settings)
+        
+        return web.json_response({
+            'success': True,
+            'message': 'Settings saved successfully'
+        })
+        
+    except Exception as e:
+        return web.json_response({
+            'error': f'Failed to save settings: {str(e)}'
+        }, status=500)
 
 @routes.get('/api/ads')
 async def get_ads(request):
