@@ -23,8 +23,15 @@ async def ping_server():
             async with aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=10)
             ) as session:
+                # Ping the main URL
                 async with session.get(URL) as resp:
                     logging.info("Pinged server with response: {}".format(resp.status))
+                
+                # Also ping the health endpoint
+                health_url = f"{URL}api/health"
+                async with session.get(health_url) as resp:
+                    logging.info("Pinged health endpoint with response: {}".format(resp.status))
+                    
         except TimeoutError:
             logging.warning("Couldn't connect to the site URL..!")
         except Exception:

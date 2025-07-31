@@ -1,0 +1,242 @@
+ 
+/* Enhanced HilltopAds Prevention and Container Management */
+
+/* Prevent ALL fixed position elements that aren't part of our design */
+body > *:not(.container):not(.ad-slot):not(.header):not(.footer) {
+    position: relative !important;
+}
+
+/* Specifically target HilltopAds patterns */
+body > div[style*="position: fixed"],
+body > div[style*="position:fixed"],
+body > div[style*="z-index: 999"],
+body > div[style*="z-index:999"],
+body > div[style*="z-index: 9999"],
+body > div[style*="z-index:9999"],
+body > iframe[style*="position: fixed"],
+body > iframe[style*="position:fixed"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Hide elements that typically appear at bottom */
+body > div:last-child:not(.container):not(.ad-slot):not(.footer) {
+    display: none !important;
+}
+
+body > div:nth-last-child(1):not(.container):not(.ad-slot):not(.footer),
+body > div:nth-last-child(2):not(.container):not(.ad-slot):not(.footer) {
+    display: none !important;
+}
+
+/* Prevent ads from breaking out of containers */
+.ad-slot {
+    position: relative !important;
+    overflow: hidden !important;
+    z-index: 1 !important;
+    isolation: isolate !important;
+    contain: layout style !important;
+}
+
+.ad-slot * {
+    position: relative !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Force iframe ads to stay contained */
+.ad-slot iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 300px !important;
+    border: none !important;
+    position: relative !important;
+    z-index: auto !important;
+}
+
+/* Prevent script-injected elements from escaping */
+.ad-slot script + * {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Enhanced ad wrapper containment */
+.ad-wrapper {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    isolation: isolate !important;
+    contain: layout style !important;
+}
+
+/* Prevent ads from creating overlays */
+.ad-wrapper > * {
+    position: relative !important;
+    z-index: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Specific HilltopAds targeting */
+div[id*="hilltop"]:not(.ad-slot div[id*="hilltop"]) {
+    display: none !important;
+}
+
+div[class*="hilltop"]:not(.ad-slot div[class*="hilltop"]) {
+    display: none !important;
+}
+
+/* Target common ad injection patterns */
+body > div:empty + script + div,
+body > script + div:not(.container):not(.ad-slot) {
+    display: none !important;
+}
+
+/* Prevent popup/overlay ads */
+div[style*="position: absolute"][style*="top: 0"][style*="left: 0"],
+div[style*="position: fixed"][style*="top: 0"][style*="left: 0"],
+div[style*="width: 100%"][style*="height: 100%"]:not(.container) {
+    display: none !important;
+}
+
+/* Container-specific enhancements */
+.ad-slot.loading::before {
+    content: "Loading ad...";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    height: 50px;
+}
+
+.ad-slot.error::before {
+    content: "Ad failed to load";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    height: 50px;
+}
+
+/* Relocated ad styling */
+.ad-wrapper.relocated {
+    border: 1px dashed rgba(0, 255, 0, 0.3);
+    background: rgba(0, 255, 0, 0.05);
+}
+
+.ad-wrapper.relocated::before {
+    content: "Relocated Ad";
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 8px;
+    color: #00ff00;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1px 3px;
+    border-radius: 2px;
+    z-index: 1000;
+}
+
+/* Mobile-specific ad containment */
+@media (max-width: 768px) {
+    .ad-slot {
+        min-height: 50px !important;
+        max-height: 250px !important;
+    }
+    
+    .ad-slot iframe {
+        max-height: 200px !important;
+    }
+    
+    /* Hide any elements that try to cover full mobile screen */
+    div[style*="width: 100vw"],
+    div[style*="height: 100vh"]:not(.container) {
+        display: none !important;
+    }
+}
+
+/* Desktop-specific rules */
+@media (min-width: 769px) {
+    .ad-slot {
+        min-height: 90px !important;
+        max-height: 400px !important;
+    }
+    
+    .ad-slot iframe {
+        max-height: 350px !important;
+    }
+}
+
+/* Prevent sticky/floating ads */
+*[style*="position: sticky"]:not(.header):not(.footer) {
+    position: relative !important;
+}
+
+/* Force all potential ad elements to be contained */
+body * {
+    max-width: 100% !important;
+}
+
+body > *:not(.container) {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+}
+
+/* Final catch-all for problematic elements */
+body::after {
+    content: "";
+    display: block;
+    clear: both;
+    height: 0;
+    visibility: hidden;
+}
+
+/* Ensure no element can escape the viewport horizontally */
+* {
+    box-sizing: border-box !important;
+}
+
+html {
+    overflow-x: hidden !important;
+}
+
+body {
+    overflow-x: hidden !important;
+    position: relative !important;
+}
+
+/* Prevent ads from creating scrollbars */
+.ad-slot,
+.ad-wrapper {
+    box-sizing: border-box !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Debug mode - uncomment to see ad containers */
+/*
+.ad-slot {
+    border: 2px solid red !important;
+    min-height: 100px !important;
+}
+
+.ad-slot::before {
+    content: attr(id) !important;
+    display: block !important;
+    color: red !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    padding: 10px !important;
+}
+*/

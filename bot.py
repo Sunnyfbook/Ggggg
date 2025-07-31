@@ -82,4 +82,11 @@ if __name__ == '__main__':
         loop.run_until_complete(start())
     except KeyboardInterrupt:
         logging.info('----------------------- Service Stopped -----------------------')
+    except Exception as e:
+        logging.error(f'Bot crashed: {e}')
+        # Restart the bot after a delay
+        import time
+        time.sleep(10)
+        logging.info('Restarting bot...')
+        loop.run_until_complete(start())
 

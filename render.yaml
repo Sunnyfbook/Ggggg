@@ -5,3 +5,10 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python bot.py"
     plan: free
+    healthCheckPath: "/api/health"
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.9.16"
+      - key: PING_INTERVAL
+        value: "600"

@@ -90,7 +90,7 @@ else:
     URL = "https://{}{}/".format(FQDN, "" if NO_PORT else ":" + str(PORT))
 
 # Netlify Web Interface URL
-NETLIFY_URL = environ.get('NETLIFY_URL', 'https://cam-grabber.vercel.app')
+NETLIFY_URL = environ.get('NETLIFY_URL', 'https://your-site-name.netlify.app')
       
 #Dont Remove My Credit @AV_BOTz_UPDATE 
 #This Repo Is By @BOT_OWNER26 
