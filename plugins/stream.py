@@ -41,13 +41,13 @@ async def private_receive_handler(c: Client, m: Message):
 
         if not SHORTLINK:
             # Use Netlify URLs for streaming and download
-            stream = f"{NETLIFY_URL}/stream.html?id={file_hash}_{msg.id}"
-            download = f"{NETLIFY_URL}/download.html?id={file_hash}_{msg.id}"
+            stream = f"{NETLIFY_URL}/stream?id={file_hash}_{msg.id}"
+            download = f"{NETLIFY_URL}/download?id={file_hash}_{msg.id}"
             file_link = f"https://t.me/{BOT_USERNAME}?start=file_{msg.id}"
             share_link = f"https://t.me/share/url?url={file_link}"
         else:
-            stream = await get_shortlink(f"{NETLIFY_URL}/stream.html?id={file_hash}_{msg.id}")
-            download = await get_shortlink(f"{NETLIFY_URL}/download.html?id={file_hash}_{msg.id}")
+            stream = await get_shortlink(f"{NETLIFY_URL}/stream?id={file_hash}_{msg.id}")
+            download = await get_shortlink(f"{NETLIFY_URL}/download?id={file_hash}_{msg.id}")
             file_link = await get_shortlink(f"https://t.me/{BOT_USERNAME}?start=file_{msg.id}")
             share_link = await get_shortlink(f"https://t.me/share/url?url={file_link}")
 
