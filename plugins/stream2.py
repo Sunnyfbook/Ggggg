@@ -3,7 +3,7 @@ import os
 import random
 from web.utils.file_properties import get_hash
 from pyrogram import Client, filters, enums
-from info import BIN_CHANNEL, BAN_CHNL, BANNED_CHANNELS, URL, CHANNEL, BOT_USERNAME
+from info import BIN_CHANNEL, BAN_CHNL, BANNED_CHANNELS, URL, CHANNEL, BOT_USERNAME, NETLIFY_URL
 from utils import get_size
 from Script import script
 from database.users_db import db
@@ -32,8 +32,9 @@ async def channel_receive_handler(bot: Client, broadcast: Message):
         msg = await broadcast.forward(chat_id=BIN_CHANNEL)
 
         # Stream & Download लिंक बनाए
-        stream = f"{URL}watch/{msg.id}?hash={get_hash(msg)}"
-        download = f"{URL}{msg.id}?hash={get_hash(msg)}"
+        file_hash = get_hash(msg)
+        stream = f"{NETLIFY_URL}/stream?id={file_hash}_{msg.id}"
+        download = f"{NETLIFY_URL}/download?id={file_hash}_{msg.id}"
         file_link = f"https://t.me/{BOT_USERNAME}?start=file_{msg.id}"
             
         await msg.reply_text(
