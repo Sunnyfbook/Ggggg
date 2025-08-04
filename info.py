@@ -90,7 +90,7 @@ else:
     URL = "https://{}{}/".format(FQDN, "" if NO_PORT else ":" + str(PORT))
 
 # Netlify Web Interface URL
-NETLIFY_URL = environ.get('NETLIFY_URL', 'https://fun-unlim.netlify.app')
+NETLIFY_URL = environ.get('NETLIFY_URL', 'https://mmsbee.ilja.org')
       
 #Dont Remove My Credit @AV_BOTz_UPDATE 
 #This Repo Is By @BOT_OWNER26 
