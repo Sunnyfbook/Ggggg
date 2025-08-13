@@ -1,5 +1,10 @@
 from aiohttp import web
 from .stream_routes import routes, cors_middleware
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from admin_api import setup_admin_routes, start_cleanup_task
+import asyncio
 
 #Dont Remove My Credit @AV_BOTz_UPDATE 
 #This Repo Is By @BOT_OWNER26 
@@ -9,6 +14,13 @@ async def web_server():
     web_app = web.Application(client_max_size=30000000)
     web_app.add_routes(routes)
     web_app.middlewares.append(cors_middleware)
+    
+    # Setup admin routes
+    await setup_admin_routes(web_app)
+    
+    # Start cleanup task for expired sessions
+    asyncio.create_task(start_cleanup_task())
+    
     return web_app
 
 #Dont Remove My Credit @AV_BOTz_UPDATE 

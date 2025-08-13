@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CamGrabber Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .content {
+            transition: margin-left 0.3s ease;
+        }
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 w-96 max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Admin Login</h2>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                        Username
+                    </label>
+                    <input type="text" id="username" name="username" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           value="admin" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                        Password
+                    </label>
+                    <input type="password" id="password" name="password" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                           value="admin123" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" 
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+            <div id="loginError" class="mt-4 text-red-500 text-center hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div id="mainLayout" class="hidden">
+        <!-- Sidebar -->
+        <div class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h1 class="text-xl font-bold text-gray-800">Admin Panel</h1>
+                <button id="sidebarToggle" class="lg:hidden">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="mt-4">
+                <a href="#dashboard" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#ads" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-ad mr-3"></i>
+                    Ads Management
+                </a>
+                <a href="#reactions" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-heart mr-3"></i>
+                    Reactions
+                </a>
+                <a href="#api" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-cog mr-3"></i>
+                    API Settings
+                </a>
+                <a href="#server" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-server mr-3"></i>
+                    Server Settings
+                </a>
+                <a href="#metadata" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-tags mr-3"></i>
+                    Metadata
+                </a>
+                <a href="#credentials" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-user-shield mr-3"></i>
+                    Credentials
+                </a>
+                <a href="#activity" class="nav-link flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-history mr-3"></i>
+                    Activity Logs
+                </a>
+            </nav>
+            <div class="absolute bottom-4 left-4 right-4">
+                <button id="logoutBtn" class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content ml-0 lg:ml-64 min-h-screen bg-gray-100">
+            <!-- Top Bar -->
+            <div class="bg-white shadow-sm border-b px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h2 id="pageTitle" class="text-xl font-semibold text-gray-800">Dashboard</h2>
+                    <div class="flex items-center space-x-4">
+                        <span id="userInfo" class="text-gray-600"></span>
+                        <button id="mobileMenuToggle" class="lg:hidden">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6">
+                <!-- Dashboard -->
+                <div id="dashboard" class="page-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="card bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                    <i class="fas fa-eye text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Views</p>
+                                    <p id="totalViews" class="text-2xl font-semibold text-gray-900">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                    <i class="fas fa-download text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Downloads</p>
+                                    <p id="totalDownloads" class="text-2xl font-semibold text-gray-900">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-red-100 text-red-600">
+                                    <i class="fas fa-heart text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Reactions</p>
+                                    <p id="totalReactions" class="text-2xl font-semibold text-gray-900">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                                    <i class="fas fa-ad text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Active Ads</p>
+                                    <p id="activeAds" class="text-2xl font-semibold text-gray-900">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="card bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button onclick="loadSection('ads')" class="w-full text-left p-3 rounded-lg hover:bg-gray-50 border">
+                                    <i class="fas fa-ad mr-2"></i>Manage Ads
+                                </button>
+                                <button onclick="loadSection('reactions')" class="w-full text-left p-3 rounded-lg hover:bg-gray-50 border">
+                                    <i class="fas fa-heart mr-2"></i>Configure Reactions
+                                </button>
+                                <button onclick="loadSection('api')" class="w-full text-left p-3 rounded-lg hover:bg-gray-50 border">
+                                    <i class="fas fa-cog mr-2"></i>API Settings
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+                            <div id="recentActivity" class="space-y-2">
+                                <p class="text-gray-500">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ads Management -->
+                <div id="ads" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">Ads Management</h3>
+                        
+                        <!-- Banner Ads -->
+                        <div class="mb-8">
+                            <h4 class="text-md font-medium mb-4">Banner Ads</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Top Banner</label>
+                                    <textarea id="bannerTop" class="w-full p-2 border rounded-md" rows="3" placeholder="Enter ad code"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Middle Banner</label>
+                                    <textarea id="bannerMiddle" class="w-full p-2 border rounded-md" rows="3" placeholder="Enter ad code"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Bottom Banner</label>
+                                    <textarea id="bannerBottom" class="w-full p-2 border rounded-md" rows="3" placeholder="Enter ad code"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Sidebar Banner</label>
+                                    <textarea id="bannerSidebar" class="w-full p-2 border rounded-md" rows="3" placeholder="Enter ad code"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VAST Ads -->
+                        <div class="mb-8">
+                            <h4 class="text-md font-medium mb-4">VAST Ads</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pre-Roll</label>
+                                    <input type="text" id="vastPreroll" class="w-full p-2 border rounded-md" placeholder="VAST URL">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Mid-Roll</label>
+                                    <input type="text" id="vastMidroll" class="w-full p-2 border rounded-md" placeholder="VAST URL">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Post-Roll</label>
+                                    <input type="text" id="vastPostroll" class="w-full p-2 border rounded-md" placeholder="VAST URL">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button onclick="saveBannerAds()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+                                Save Banner Ads
+                            </button>
+                            <button onclick="saveVastAds()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                Save VAST Ads
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reactions -->
+                <div id="reactions" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">Reactions Configuration</h3>
+                        <div id="reactionsForm">
+                            <p class="text-gray-500">Loading reactions configuration...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Settings -->
+                <div id="api" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">API Settings</h3>
+                        <form id="apiForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">API Base URL</label>
+                                <input type="url" id="apiBaseUrl" class="w-full p-2 border rounded-md" placeholder="https://your-api-domain.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+                                <input type="text" id="apiKey" class="w-full p-2 border rounded-md" placeholder="Your API key">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Server Port</label>
+                                <input type="number" id="serverPort" class="w-full p-2 border rounded-md" placeholder="8080">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Environment</label>
+                                <select id="environment" class="w-full p-2 border rounded-md">
+                                    <option value="development">Development</option>
+                                    <option value="production">Production</option>
+                                    <option value="staging">Staging</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    Save API Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Server Settings -->
+                <div id="server" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">Server Settings</h3>
+                        <form id="serverForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Server Name</label>
+                                <input type="text" id="serverName" class="w-full p-2 border rounded-md" placeholder="CamGrabber Server">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Max File Size (MB)</label>
+                                <input type="number" id="maxFileSize" class="w-full p-2 border rounded-md" placeholder="100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rate Limit (requests/min)</label>
+                                <input type="number" id="rateLimit" class="w-full p-2 border rounded-md" placeholder="60">
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    Save Server Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Metadata -->
+                <div id="metadata" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">Website Metadata</h3>
+                        <form id="metadataForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Site Title</label>
+                                <input type="text" id="siteTitle" class="w-full p-2 border rounded-md" placeholder="CamGrabber">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Site Description</label>
+                                <textarea id="siteDescription" class="w-full p-2 border rounded-md" rows="3" placeholder="Video streaming and download platform"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
+                                <input type="text" id="siteKeywords" class="w-full p-2 border rounded-md" placeholder="video, streaming, download">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Author</label>
+                                <input type="text" id="siteAuthor" class="w-full p-2 border rounded-md" placeholder="CamGrabber Team">
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    Save Metadata
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Credentials -->
+                <div id="credentials" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">Admin Credentials</h3>
+                        <form id="credentialsForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                                <input type="text" id="adminUsername" class="w-full p-2 border rounded-md" placeholder="admin">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="adminEmail" class="w-full p-2 border rounded-md" placeholder="admin@example.com">
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    Update Credentials
+                                </button>
+                            </div>
+                        </form>
+
+                        <hr class="my-8">
+                        
+                        <h4 class="text-md font-medium mb-4">Change Password</h4>
+                        <form id="passwordForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                <input type="password" id="currentPassword" class="w-full p-2 border rounded-md" placeholder="Current password">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                <input type="password" id="newPassword" class="w-full p-2 border rounded-md" placeholder="New password">
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                    Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Activity Logs -->
+                <div id="activity" class="page-content hidden">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-6">Activity Logs</h3>
+                        <div id="activityLogs" class="space-y-2">
+                            <p class="text-gray-500">Loading activity logs...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let currentUser = null;
+
+        // API Base URL - adjust this to match your server
+        const API_BASE = window.location.origin;
+
+        // Utility functions
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                },
+                ...options
+            };
+
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await apiRequest('/api/admin/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+                
+                authToken = response.token;
+                currentUser = response.user;
+                
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('mainLayout').classList.remove('hidden');
+                document.getElementById('userInfo').textContent = `Welcome, ${currentUser.username}`;
+                
+                // Load dashboard data
+                loadDashboard();
+                
+                showNotification('Login successful!');
+            } catch (error) {
+                document.getElementById('loginError').textContent = error.message;
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await apiRequest('/api/admin/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            authToken = null;
+            currentUser = null;
+            document.getElementById('mainLayout').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+        });
+
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = e.currentTarget.getAttribute('href').substring(1);
+                loadSection(section);
+            });
+        });
+
+        function loadSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.page-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(section).classList.remove('hidden');
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'ads': 'Ads Management',
+                'reactions': 'Reactions',
+                'api': 'API Settings',
+                'server': 'Server Settings',
+                'metadata': 'Metadata',
+                'credentials': 'Credentials',
+                'activity': 'Activity Logs'
+            };
+            document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+            
+            // Load section data
+            switch(section) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'ads':
+                    loadAdsSettings();
+                    break;
+                case 'reactions':
+                    loadReactionsSettings();
+                    break;
+                case 'api':
+                    loadApiSettings();
+                    break;
+                case 'server':
+                    loadServerSettings();
+                    break;
+                case 'metadata':
+                    loadMetadata();
+                    break;
+                case 'credentials':
+                    loadCredentials();
+                    break;
+                case 'activity':
+                    loadActivityLogs();
+                    break;
+            }
+        }
+
+        // Dashboard functions
+        async function loadDashboard() {
+            try {
+                const stats = await apiRequest('/api/admin/stats');
+                
+                document.getElementById('totalViews').textContent = stats.totalViews || 0;
+                document.getElementById('totalDownloads').textContent = stats.totalDownloads || 0;
+                document.getElementById('totalReactions').textContent = stats.totalReactions || 0;
+                document.getElementById('activeAds').textContent = stats.activeAds || 0;
+                
+                // Load recent activity
+                const activities = await apiRequest('/api/admin/activity');
+                const recentActivity = document.getElementById('recentActivity');
+                
+                if (activities.length > 0) {
+                    recentActivity.innerHTML = activities.slice(0, 5).map(activity => `
+                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <span class="text-sm">${activity.message}</span>
+                            <span class="text-xs text-gray-500">${new Date(activity.timestamp).toLocaleString()}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    recentActivity.innerHTML = '<p class="text-gray-500">No recent activity</p>';
+                }
+            } catch (error) {
+                showNotification('Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Ads functions
+        async function loadAdsSettings() {
+            try {
+                const ads = await apiRequest('/api/admin/ads');
+                
+                if (ads.banner) {
+                    document.getElementById('bannerTop').value = ads.banner.top || '';
+                    document.getElementById('bannerMiddle').value = ads.banner.middle || '';
+                    document.getElementById('bannerBottom').value = ads.banner.bottom || '';
+                    document.getElementById('bannerSidebar').value = ads.banner.sidebar || '';
+                }
+                
+                if (ads.vast) {
+                    document.getElementById('vastPreroll').value = ads.vast.preRoll || '';
+                    document.getElementById('vastMidroll').value = ads.vast.midRoll || '';
+                    document.getElementById('vastPostroll').value = ads.vast.postRoll || '';
+                }
+            } catch (error) {
+                showNotification('Failed to load ads settings', 'error');
+            }
+        }
+
+        async function saveBannerAds() {
+            try {
+                const bannerData = {
+                    top: document.getElementById('bannerTop').value,
+                    middle: document.getElementById('bannerMiddle').value,
+                    bottom: document.getElementById('bannerBottom').value,
+                    sidebar: document.getElementById('bannerSidebar').value
+                };
+                
+                await apiRequest('/api/admin/ads/banner', {
+                    method: 'POST',
+                    body: JSON.stringify(bannerData)
+                });
+                
+                showNotification('Banner ads saved successfully');
+            } catch (error) {
+                showNotification('Failed to save banner ads', 'error');
+            }
+        }
+
+        async function saveVastAds() {
+            try {
+                const vastData = {
+                    preRoll: document.getElementById('vastPreroll').value,
+                    midRoll: document.getElementById('vastMidroll').value,
+                    postRoll: document.getElementById('vastPostroll').value
+                };
+                
+                await apiRequest('/api/admin/ads/vast', {
+                    method: 'POST',
+                    body: JSON.stringify(vastData)
+                });
+                
+                showNotification('VAST ads saved successfully');
+            } catch (error) {
+                showNotification('Failed to save VAST ads', 'error');
+            }
+        }
+
+        // Reactions functions
+        async function loadReactionsSettings() {
+            try {
+                const reactions = await apiRequest('/api/admin/reactions');
+                const form = document.getElementById('reactionsForm');
+                
+                // Create a simple form for reactions
+                form.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Enable Reactions</label>
+                            <input type="checkbox" id="enableReactions" ${reactions.enabled ? 'checked' : ''} class="mr-2">
+                            <span class="text-sm text-gray-600">Show reaction buttons on videos</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Reaction Types</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="likeReaction" ${reactions.like ? 'checked' : ''} class="mr-2">
+                                    <span>Like</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="dislikeReaction" ${reactions.dislike ? 'checked' : ''} class="mr-2">
+                                    <span>Dislike</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="shareReaction" ${reactions.share ? 'checked' : ''} class="mr-2">
+                                    <span>Share</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="saveReactionsSettings()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                Save Reactions
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showNotification('Failed to load reactions settings', 'error');
+            }
+        }
+
+        async function saveReactionsSettings() {
+            try {
+                const reactionsData = {
+                    enabled: document.getElementById('enableReactions').checked,
+                    like: document.getElementById('likeReaction').checked,
+                    dislike: document.getElementById('dislikeReaction').checked,
+                    share: document.getElementById('shareReaction').checked
+                };
+                
+                await apiRequest('/api/admin/reactions', {
+                    method: 'POST',
+                    body: JSON.stringify(reactionsData)
+                });
+                
+                showNotification('Reactions saved successfully');
+            } catch (error) {
+                showNotification('Failed to save reactions', 'error');
+            }
+        }
+
+        // API Settings functions
+        async function loadApiSettings() {
+            try {
+                const api = await apiRequest('/api/admin/api');
+                
+                document.getElementById('apiBaseUrl').value = api.apiBaseUrl || '';
+                document.getElementById('apiKey').value = api.apiKey || '';
+                document.getElementById('serverPort').value = api.serverPort || '';
+                document.getElementById('environment').value = api.environment || 'development';
+            } catch (error) {
+                showNotification('Failed to load API settings', 'error');
+            }
+        }
+
+        document.getElementById('apiForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const apiData = {
+                    apiBaseUrl: document.getElementById('apiBaseUrl').value,
+                    apiKey: document.getElementById('apiKey').value,
+                    serverPort: document.getElementById('serverPort').value,
+                    environment: document.getElementById('environment').value
+                };
+                
+                await apiRequest('/api/admin/api', {
+                    method: 'POST',
+                    body: JSON.stringify(apiData)
+                });
+                
+                showNotification('API settings saved successfully');
+            } catch (error) {
+                showNotification('Failed to save API settings', 'error');
+            }
+        });
+
+        // Server Settings functions
+        async function loadServerSettings() {
+            try {
+                const server = await apiRequest('/api/admin/server');
+                
+                document.getElementById('serverName').value = server.serverName || '';
+                document.getElementById('maxFileSize').value = server.maxFileSize || '';
+                document.getElementById('rateLimit').value = server.rateLimit || '';
+            } catch (error) {
+                showNotification('Failed to load server settings', 'error');
+            }
+        }
+
+        document.getElementById('serverForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const serverData = {
+                    serverName: document.getElementById('serverName').value,
+                    maxFileSize: document.getElementById('maxFileSize').value,
+                    rateLimit: document.getElementById('rateLimit').value
+                };
+                
+                await apiRequest('/api/admin/server', {
+                    method: 'POST',
+                    body: JSON.stringify(serverData)
+                });
+                
+                showNotification('Server settings saved successfully');
+            } catch (error) {
+                showNotification('Failed to save server settings', 'error');
+            }
+        });
+
+        // Metadata functions
+        async function loadMetadata() {
+            try {
+                const metadata = await apiRequest('/api/admin/metadata');
+                
+                document.getElementById('siteTitle').value = metadata.siteTitle || '';
+                document.getElementById('siteDescription').value = metadata.siteDescription || '';
+                document.getElementById('siteKeywords').value = metadata.siteKeywords || '';
+                document.getElementById('siteAuthor').value = metadata.siteAuthor || '';
+            } catch (error) {
+                showNotification('Failed to load metadata', 'error');
+            }
+        }
+
+        document.getElementById('metadataForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const metadataData = {
+                    siteTitle: document.getElementById('siteTitle').value,
+                    siteDescription: document.getElementById('siteDescription').value,
+                    siteKeywords: document.getElementById('siteKeywords').value,
+                    siteAuthor: document.getElementById('siteAuthor').value
+                };
+                
+                await apiRequest('/api/admin/metadata', {
+                    method: 'POST',
+                    body: JSON.stringify(metadataData)
+                });
+                
+                showNotification('Metadata saved successfully');
+            } catch (error) {
+                showNotification('Failed to save metadata', 'error');
+            }
+        });
+
+        // Credentials functions
+        async function loadCredentials() {
+            try {
+                const credentials = await apiRequest('/api/admin/credentials');
+                
+                document.getElementById('adminUsername').value = credentials.username || '';
+                document.getElementById('adminEmail').value = credentials.email || '';
+            } catch (error) {
+                showNotification('Failed to load credentials', 'error');
+            }
+        }
+
+        document.getElementById('credentialsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const credentialsData = {
+                    username: document.getElementById('adminUsername').value,
+                    email: document.getElementById('adminEmail').value,
+                    password: 'admin123' // Default password for credential update
+                };
+                
+                await apiRequest('/api/admin/credentials', {
+                    method: 'POST',
+                    body: JSON.stringify(credentialsData)
+                });
+                
+                showNotification('Credentials updated successfully');
+            } catch (error) {
+                showNotification('Failed to update credentials', 'error');
+            }
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const passwordData = {
+                    currentPassword: document.getElementById('currentPassword').value,
+                    newPassword: document.getElementById('newPassword').value
+                };
+                
+                await apiRequest('/api/admin/credentials/password', {
+                    method: 'POST',
+                    body: JSON.stringify(passwordData)
+                });
+                
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                showNotification('Password changed successfully');
+            } catch (error) {
+                showNotification('Failed to change password', 'error');
+            }
+        });
+
+        // Activity Logs functions
+        async function loadActivityLogs() {
+            try {
+                const activities = await apiRequest('/api/admin/activity');
+                const logsContainer = document.getElementById('activityLogs');
+                
+                if (activities.length > 0) {
+                    logsContainer.innerHTML = activities.map(activity => `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium">${activity.message}</p>
+                                <p class="text-sm text-gray-500">Type: ${activity.type}</p>
+                            </div>
+                            <span class="text-xs text-gray-400">${new Date(activity.timestamp).toLocaleString()}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    logsContainer.innerHTML = '<p class="text-gray-500">No activity logs found</p>';
+                }
+            } catch (error) {
+                showNotification('Failed to load activity logs', 'error');
+            }
+        }
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            const savedToken = localStorage.getItem('adminToken');
+            if (savedToken) {
+                authToken = savedToken;
+                // Try to validate token
+                apiRequest('/api/admin/stats')
+                    .then(() => {
+                        document.getElementById('loginModal').classList.add('hidden');
+                        document.getElementById('mainLayout').classList.remove('hidden');
+                        loadDashboard();
+                    })
+                    .catch(() => {
+                        localStorage.removeItem('adminToken');
+                    });
+            }
+        });
+    </script>
+</body>
+</html> 
