@@ -11,10 +11,6 @@ from web.utils.render_template import render_page
 from database.users_db import ads_config
 from web.utils.file_properties import get_file_ids, get_hash
 from pyrogram.types import Message
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from admin_api import setup_admin_routes
 
 routes = web.RouteTableDef()
 
@@ -29,27 +25,6 @@ async def root_route_handler(_):
         "message": "API Server Running",
         "status": "healthy",
         "web_interface": "https://your-site-name.netlify.app"
-    })
-
-@routes.get("/admin", allow_head=True)
-async def admin_panel_handler(_):
-    """Serve admin panel HTML"""
-    try:
-        with open('web/template/admin.html', 'r', encoding='utf-8') as f:
-            content = f.read()
-        return web.Response(text=content, content_type='text/html')
-    except FileNotFoundError:
-        return web.json_response({
-            "error": "Admin panel not found",
-            "message": "Please ensure admin.html exists in web/template/"
-        }, status=404)
-
-@routes.get("/api/test", allow_head=True)
-async def test_api_handler(_):
-    """Test API endpoint"""
-    return web.json_response({
-        "message": "API is working!",
-        "timestamp": datetime.now().isoformat()
     })
 
 # Web interface routes removed - moved to Netlify

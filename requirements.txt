@@ -11,8 +11,6 @@ psutil
 jinja2
 pytz
 shortzy
-bcrypt
-PyJWT
 
 #Dont Remove My Credit @AV_BOTz_UPDATE 
 #This Repo Is By @BOT_OWNER26 
