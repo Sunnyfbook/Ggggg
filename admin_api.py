@@ -175,6 +175,7 @@ async def update_active_ads_count():
 # Admin API Routes
 async def setup_admin_routes(app: web.Application):
     """Setup all admin API routes"""
+    logger.info("Setting up admin routes...")
     
     # Admin Authentication
     async def admin_login(request: web.Request):
@@ -808,7 +809,16 @@ async def setup_admin_routes(app: web.Application):
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
+    # Simple test endpoint
+    async def simple_test(request: web.Request):
+        """Simple test endpoint to verify admin routes are working"""
+        return web.json_response({
+            "message": "Admin API is working!",
+            "timestamp": datetime.utcnow().isoformat()
+        })
+
     # Add routes to the app
+    logger.info("Adding admin routes to app...")
     app.router.add_post('/api/admin/login', admin_login)
     app.router.add_post('/api/admin/logout', admin_logout)
     app.router.add_get('/api/admin/stats', get_admin_stats)
@@ -831,6 +841,8 @@ async def setup_admin_routes(app: web.Application):
     app.router.add_post('/api/admin/page_titles', save_page_titles)
     app.router.add_get('/api/admin/activity', get_activity_logs)
     app.router.add_get('/api/admin/test', test_endpoint)
+    app.router.add_get('/api/admin/simple-test', simple_test)
+    logger.info("Admin routes added successfully!")
 
 # Cleanup expired sessions every hour
 async def start_cleanup_task():

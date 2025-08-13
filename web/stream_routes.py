@@ -44,6 +44,14 @@ async def admin_panel_handler(_):
             "message": "Please ensure admin.html exists in web/template/"
         }, status=404)
 
+@routes.get("/api/test", allow_head=True)
+async def test_api_handler(_):
+    """Test API endpoint"""
+    return web.json_response({
+        "message": "API is working!",
+        "timestamp": datetime.now().isoformat()
+    })
+
 # Web interface routes removed - moved to Netlify
 # Only API endpoints remain for Netlify to use
 
