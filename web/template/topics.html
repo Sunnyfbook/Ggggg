@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Topics Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: #667eea;
+        }
+
+        .search-box button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .search-box button:hover {
+            transform: translateY(-2px);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .topic-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .topic-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .topic-thumbnail .placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.3;
+        }
+
+        .topic-info {
+            padding: 20px;
+        }
+
+        .topic-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .topic-description {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .topic-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #95a5a6;
+        }
+
+        .video-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .topic-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .topics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Group Topics</h1>
+            <p>Browse and watch videos from Telegram group topics</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="groupSearch" placeholder="Enter group ID (e.g., -1001234567890)">
+                <button onclick="searchTopics()">Search Topics</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="topicsContainer">
+                <div class="empty-state">
+                    <h3>🔍 Search for Topics</h3>
+                    <p>Enter a group ID above to start browsing topics and videos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGroupId = null;
+
+        async function searchTopics() {
+            const groupId = document.getElementById('groupSearch').value.trim();
+            if (!groupId) {
+                alert('Please enter a group ID');
+                return;
+            }
+
+            currentGroupId = groupId;
+            await loadTopics(groupId);
+        }
+
+        async function loadTopics(groupId) {
+            const container = document.getElementById('topicsContainer');
+            container.innerHTML = '<div class="loading">Loading topics...</div>';
+
+            try {
+                const response = await fetch(`/api/topics/group/${groupId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayTopics(data.topics);
+                } else {
+                    container.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="error">Failed to load topics. Please check the group ID and try again.</div>';
+            }
+        }
+
+        function displayTopics(topics) {
+            const container = document.getElementById('topicsContainer');
+
+            if (topics.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 No Topics Found</h3>
+                        <p>No topics were found in this group. Make sure the group has topics enabled.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const topicsHTML = topics.map(topic => `
+                <div class="topic-card">
+                    <div class="topic-thumbnail">
+                        ${topic.thumbnail ? 
+                            `<img src="/api/topics/${topic.topic_id}/thumbnail?group_id=${topic.group_id}" alt="${topic.topic_name}">` :
+                            `<div class="placeholder">📹</div>`
+                        }
+                    </div>
+                    <div class="topic-info">
+                        <div class="topic-title">${topic.topic_name}</div>
+                        <div class="topic-description">${topic.title || 'No description available'}</div>
+                        <div class="topic-meta">
+                            <span>📅 ${formatDate(topic.processed_at)}</span>
+                            <span class="video-count">🎬 ${topic.video_count} videos</span>
+                        </div>
+                        <div class="topic-actions">
+                            <a href="/api/topics/${topic.topic_id}?group_id=${topic.group_id}" class="btn btn-primary" target="_blank">View Details</a>
+                            <button class="btn btn-secondary" onclick="viewVideos(${topic.topic_id}, ${topic.group_id})">Watch Videos</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="topics-grid">
+                    ${topicsHTML}
+                </div>
+            `;
+        }
+
+        async function viewVideos(topicId, groupId) {
+            try {
+                const response = await fetch(`/api/topics/${topicId}?group_id=${groupId}`);
+                const data = await response.json();
+
+                if (data.success && data.topic.videos.length > 0) {
+                    // Create a simple video player page
+                    const videoUrls = data.topic.videos.map(video => 
+                        `${window.location.origin}${video.stream_url}`
+                    ).join('\n');
+                    
+                    alert(`Video URLs for ${data.topic.topic_name}:\n\n${videoUrls}\n\nCopy these URLs to watch the videos.`);
+                } else {
+                    alert('No videos found in this topic.');
+                }
+            } catch (error) {
+                alert('Error loading videos: ' + error.message);
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        // Allow Enter key to search
+        document.getElementById('groupSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchTopics();
+            }
+        });
+
+        // Load topics from URL parameter if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = urlParams.get('group_id');
+        if (groupId) {
+            document.getElementById('groupSearch').value = groupId;
+            searchTopics();
+        }
+    </script>
+</body>
+</html> 

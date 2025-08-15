@@ -27,6 +27,16 @@ async def root_route_handler(_):
         "web_interface": "https://your-site-name.netlify.app"
     })
 
+@routes.get("/topics")
+async def topics_page_handler(_):
+    """Serve the topics viewer page"""
+    try:
+        with open('web/template/topics.html', 'r', encoding='utf-8') as f:
+            content = f.read()
+        return web.Response(text=content, content_type='text/html')
+    except FileNotFoundError:
+        return web.Response(status=404, text="Topics page not found")
+
 # Web interface routes removed - moved to Netlify
 # Only API endpoints remain for Netlify to use
 
@@ -157,42 +167,84 @@ async def admin_panel(request):
         <title>Admin Panel - Ad Code Manager</title>
         <style>
             body {{ font-family: Arial, sans-serif; background: #181818; color: #fff; padding: 2em; }}
-            .container {{ max-width: 700px; margin: auto; background: #222; padding: 2em; border-radius: 8px; }}
+            .container {{ max-width: 1200px; margin: auto; background: #222; padding: 2em; border-radius: 8px; }}
+            .tabs {{ display: flex; margin-bottom: 2em; }}
+            .tab {{ padding: 1em 2em; background: #333; cursor: pointer; margin-right: 0.5em; border-radius: 4px; }}
+            .tab.active {{ background: #667eea; }}
+            .tab-content {{ display: none; }}
+            .tab-content.active {{ display: block; }}
             textarea {{ width: 100%; height: 100px; margin-bottom: 1em; }}
-            input[type=password], button {{ padding: 0.5em; margin-top: 1em; }}
+            input[type=password], input[type=text], button {{ padding: 0.5em; margin-top: 1em; }}
             .error {{ color: #ff4d4d; }}
             .success {{ color: #4dff4d; }}
             label {{ font-weight: bold; }}
+            .topic-item {{ background: #333; padding: 1em; margin: 1em 0; border-radius: 4px; }}
+            .topic-title {{ font-weight: bold; color: #667eea; }}
+            .topic-info {{ color: #ccc; font-size: 0.9em; }}
         </style>
     </head>
     <body>
         <div class='container'>
-            <h2>Ad Code Manager</h2>
-            <form id='adForm'>
-                <label for='head'>Head (for scripts in &lt;head&gt;):</label><br>
-                <textarea id='head' name='head'></textarea><br>
-                <label for='top'>Top Banner Ad:</label><br>
-                <textarea id='top' name='top'></textarea><br>
-                <label for='pre_video'>Pre-Video Ad:</label><br>
-                <textarea id='pre_video' name='pre_video'></textarea><br>
-                <label for='post_video'>Post-Video Ad:</label><br>
-                <textarea id='post_video' name='post_video'></textarea><br>
-                <label for='sidebar1'>Sidebar Ad 1:</label><br>
-                <textarea id='sidebar1' name='sidebar1'></textarea><br>
-                <label for='sidebar2'>Sidebar Ad 2:</label><br>
-                <textarea id='sidebar2' name='sidebar2'></textarea><br>
-                <label for='mobile'>Mobile Bottom Ad:</label><br>
-                <textarea id='mobile' name='mobile'></textarea><br>
-                <label for='footer'>Footer Ad:</label><br>
-                <textarea id='footer' name='footer'></textarea><br>
-                <label for='password'>Password:</label><br>
-                <input type='password' id='password' name='password'><br>
-                <button type='submit'>Save</button>
-            </form>
-            <div id='msg'></div>
+            <h2>Admin Panel</h2>
+            
+            <div class='tabs'>
+                <div class='tab active' onclick='showTab("ads")'>Ad Manager</div>
+                <div class='tab' onclick='showTab("topics")'>Group Topics</div>
+            </div>
+            
+            <div id='ads' class='tab-content active'>
+                <h3>Ad Code Manager</h3>
+                <form id='adForm'>
+                    <label for='head'>Head (for scripts in &lt;head&gt;):</label><br>
+                    <textarea id='head' name='head'></textarea><br>
+                    <label for='top'>Top Banner Ad:</label><br>
+                    <textarea id='top' name='top'></textarea><br>
+                    <label for='pre_video'>Pre-Video Ad:</label><br>
+                    <textarea id='pre_video' name='pre_video'></textarea><br>
+                    <label for='post_video'>Post-Video Ad:</label><br>
+                    <textarea id='post_video' name='post_video'></textarea><br>
+                    <label for='sidebar1'>Sidebar Ad 1:</label><br>
+                    <textarea id='sidebar1' name='sidebar1'></textarea><br>
+                    <label for='sidebar2'>Sidebar Ad 2:</label><br>
+                    <textarea id='sidebar2' name='sidebar2'></textarea><br>
+                    <label for='mobile'>Mobile Bottom Ad:</label><br>
+                    <textarea id='mobile' name='mobile'></textarea><br>
+                    <label for='footer'>Footer Ad:</label><br>
+                    <textarea id='footer' name='footer'></textarea><br>
+                    <label for='password'>Password:</label><br>
+                    <input type='password' id='password' name='password'><br>
+                    <button type='submit'>Save Ads</button>
+                </form>
+                <div id='adMsg'></div>
+            </div>
+            
+            <div id='topics' class='tab-content'>
+                <h3>Group Topics Manager</h3>
+                <div>
+                    <label for='groupId'>Group ID:</label><br>
+                    <input type='text' id='groupId' placeholder='-1001234567890'><br>
+                    <button onclick='fetchTopics()'>Fetch Topics</button>
+                    <button onclick='clearTopics()'>Clear All Topics</button>
+                </div>
+                <div id='topicsList'></div>
+                <div id='topicMsg'></div>
+            </div>
         </div>
+        
         <script>
         const AD_SLOTS = {ad_slots_js};
+        
+        function showTab(tabName) {{
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }}
+        
+        // Ad Manager Functions
         async function fetchAdCodes() {{
             const res = await fetch('/api/ads');
             const data = await res.json();
@@ -200,7 +252,7 @@ async def admin_panel(request):
                 document.getElementById(slot).value = data[slot] || '';
             }}
         }}
-        fetchAdCodes();
+        
         document.getElementById('adForm').onsubmit = async function(e) {{
             e.preventDefault();
             const password = document.getElementById('password').value;
@@ -214,13 +266,79 @@ async def admin_panel(request):
                 body: JSON.stringify(body)
             }});
             const data = await res.json();
-            const msg = document.getElementById('msg');
+            const msg = document.getElementById('adMsg');
             if (data.success) {{
                 msg.innerHTML = '<span class=\"success\">Ad codes updated!</span>';
             }} else {{
                 msg.innerHTML = '<span class=\"error\">' + (data.error || 'Error') + '</span>';
             }}
         }}
+        
+        // Topics Manager Functions
+        async function fetchTopics() {{
+            const groupId = document.getElementById('groupId').value;
+            if (!groupId) {{
+                document.getElementById('topicMsg').innerHTML = '<span class=\"error\">Please enter a group ID</span>';
+                return;
+            }}
+            
+            try {{
+                const res = await fetch(`/api/topics/group/${{groupId}}`);
+                const data = await res.json();
+                
+                if (data.success) {{
+                    displayTopics(data.topics);
+                    document.getElementById('topicMsg').innerHTML = '<span class=\"success\">Topics loaded successfully!</span>';
+                }} else {{
+                    document.getElementById('topicMsg').innerHTML = '<span class=\"error\">' + data.error + '</span>';
+                }}
+            }} catch (error) {{
+                document.getElementById('topicMsg').innerHTML = '<span class=\"error\">Error fetching topics</span>';
+            }}
+        }}
+        
+        function displayTopics(topics) {{
+            const container = document.getElementById('topicsList');
+            if (topics.length === 0) {{
+                container.innerHTML = '<p>No topics found</p>';
+                return;
+            }}
+            
+            let html = '<h4>Found Topics:</h4>';
+            topics.forEach(topic => {{
+                html += `
+                    <div class='topic-item'>
+                        <div class='topic-title'>${{topic.topic_name}}</div>
+                        <div class='topic-info'>
+                            ID: ${{topic.topic_id}} | Videos: ${{topic.video_count}} | Date: ${{topic.processed_at}}
+                        </div>
+                        <div class='topic-info'>Title: ${{topic.title}}</div>
+                    </div>
+                `;
+            }});
+            container.innerHTML = html;
+        }}
+        
+        async function clearTopics() {{
+            if (confirm('Are you sure you want to clear all topics?')) {{
+                try {{
+                    const res = await fetch('/api/topics/clear', {{ method: 'POST' }});
+                    const data = await res.json();
+                    
+                    if (data.success) {{
+                        document.getElementById('topicMsg').innerHTML = '<span class=\"success\">All topics cleared!</span>';
+                        document.getElementById('topicsList').innerHTML = '';
+                    }} else {{
+                        document.getElementById('topicMsg').innerHTML = '<span class=\"error\">' + data.error + '</span>';
+                    }}
+                }} catch (error) {{
+                    document.getElementById('topicMsg').innerHTML = '<span class=\"error\">Error clearing topics</span>';
+                }}
+            }}
+        }}
+        
+        // Initialize
+        fetchAdCodes();
         </script>
     </body>
     </html>
@@ -557,6 +675,250 @@ async def health_check(request):
         "version": __version__,
         "uptime": get_readable_time(time.time() - StartTime)
     })
+
+# Group Topics API Endpoints
+
+@routes.get("/api/topics")
+async def get_all_topics_api(request):
+    """Get all stored topics"""
+    try:
+        limit = int(request.query.get('limit', 50))
+        topics = await db.get_all_topics(limit)
+        
+        # Format topics for API response
+        formatted_topics = []
+        for topic in topics:
+            formatted_topic = {
+                "topic_id": topic["topic_id"],
+                "topic_name": topic["topic_name"],
+                "group_id": topic["group_id"],
+                "title": topic.get("title", ""),
+                "thumbnail": topic.get("thumbnail", ""),
+                "video_count": len(topic.get("videos", [])),
+                "processed_at": topic.get("processed_at", ""),
+                "videos": []
+            }
+            
+            # Add video information
+            for video in topic.get("videos", []):
+                video_info = {
+                    "message_id": video["message_id"],
+                    "file_name": video["file_name"],
+                    "file_size": video["file_size"],
+                    "duration": video["duration"],
+                    "caption": video["caption"],
+                    "stream_url": f"/watch/{video['message_id']}",
+                    "download_url": f"/dl/{video['message_id']}"
+                }
+                formatted_topic["videos"].append(video_info)
+            
+            formatted_topics.append(formatted_topic)
+        
+        return web.json_response({
+            "success": True,
+            "topics": formatted_topics,
+            "total": len(formatted_topics)
+        })
+        
+    except Exception as e:
+        logging.error(f"Error getting topics: {e}")
+        return web.json_response({
+            "success": False,
+            "error": "Failed to fetch topics",
+            "code": 500
+        }, status=500)
+
+@routes.get("/api/topics/{topic_id}")
+async def get_topic_by_id_api(request):
+    """Get a specific topic by ID"""
+    try:
+        topic_id = int(request.match_info["topic_id"])
+        group_id = int(request.query.get('group_id', 0))
+        
+        if not group_id:
+            return web.json_response({
+                "success": False,
+                "error": "group_id parameter is required",
+                "code": 400
+            }, status=400)
+        
+        topic = await db.get_topic(topic_id, group_id)
+        
+        if not topic:
+            return web.json_response({
+                "success": False,
+                "error": "Topic not found",
+                "code": 404
+            }, status=404)
+        
+        # Format topic for API response
+        formatted_topic = {
+            "topic_id": topic["topic_id"],
+            "topic_name": topic["topic_name"],
+            "group_id": topic["group_id"],
+            "title": topic.get("title", ""),
+            "thumbnail": topic.get("thumbnail", ""),
+            "processed_at": topic.get("processed_at", ""),
+            "videos": []
+        }
+        
+        # Add video information with URLs
+        for video in topic.get("videos", []):
+            video_info = {
+                "message_id": video["message_id"],
+                "file_name": video["file_name"],
+                "file_size": video["file_size"],
+                "duration": video["duration"],
+                "caption": video["caption"],
+                "stream_url": f"/watch/{video['message_id']}",
+                "download_url": f"/dl/{video['message_id']}"
+            }
+            formatted_topic["videos"].append(video_info)
+        
+        return web.json_response({
+            "success": True,
+            "topic": formatted_topic
+        })
+        
+    except ValueError:
+        return web.json_response({
+            "success": False,
+            "error": "Invalid topic_id or group_id",
+            "code": 400
+        }, status=400)
+    except Exception as e:
+        logging.error(f"Error getting topic: {e}")
+        return web.json_response({
+            "success": False,
+            "error": "Failed to fetch topic",
+            "code": 500
+        }, status=500)
+
+@routes.get("/api/topics/group/{group_id}")
+async def get_topics_by_group_api(request):
+    """Get all topics from a specific group"""
+    try:
+        group_id = int(request.match_info["group_id"])
+        limit = int(request.query.get('limit', 20))
+        
+        topics = await db.get_topics_by_group(group_id, limit)
+        
+        # Format topics for API response
+        formatted_topics = []
+        for topic in topics:
+            formatted_topic = {
+                "topic_id": topic["topic_id"],
+                "topic_name": topic["topic_name"],
+                "group_id": topic["group_id"],
+                "title": topic.get("title", ""),
+                "thumbnail": topic.get("thumbnail", ""),
+                "video_count": len(topic.get("videos", [])),
+                "processed_at": topic.get("processed_at", "")
+            }
+            formatted_topics.append(formatted_topic)
+        
+        return web.json_response({
+            "success": True,
+            "topics": formatted_topics,
+            "total": len(formatted_topics),
+            "group_id": group_id
+        })
+        
+    except ValueError:
+        return web.json_response({
+            "success": False,
+            "error": "Invalid group_id",
+            "code": 400
+        }, status=400)
+    except Exception as e:
+        logging.error(f"Error getting group topics: {e}")
+        return web.json_response({
+            "success": False,
+            "error": "Failed to fetch group topics",
+            "code": 500
+        }, status=500)
+
+@routes.get("/api/topics/{topic_id}/thumbnail")
+async def get_topic_thumbnail_api(request):
+    """Get thumbnail for a specific topic"""
+    try:
+        topic_id = int(request.match_info["topic_id"])
+        group_id = int(request.query.get('group_id', 0))
+        
+        if not group_id:
+            return web.json_response({
+                "success": False,
+                "error": "group_id parameter is required",
+                "code": 400
+            }, status=400)
+        
+        topic = await db.get_topic(topic_id, group_id)
+        
+        if not topic or not topic.get("thumbnail"):
+            return web.json_response({
+                "success": False,
+                "error": "Thumbnail not found",
+                "code": 404
+            }, status=404)
+        
+        # Get the thumbnail file from Telegram
+        try:
+            index = min(work_loads, key=work_loads.get)
+            faster_client = multi_clients[index]
+            
+            # Download and serve the thumbnail
+            file = await faster_client.download_media(topic["thumbnail"])
+            
+            with open(file, 'rb') as f:
+                content = f.read()
+            
+            return web.Response(
+                body=content,
+                content_type='image/jpeg',
+                headers={
+                    'Content-Disposition': f'inline; filename="thumbnail_{topic_id}.jpg"'
+                }
+            )
+            
+        except Exception as e:
+            logging.error(f"Error serving thumbnail: {e}")
+            return web.json_response({
+                "success": False,
+                "error": "Failed to serve thumbnail",
+                "code": 500
+            }, status=500)
+        
+    except ValueError:
+        return web.json_response({
+            "success": False,
+            "error": "Invalid topic_id or group_id",
+            "code": 400
+        }, status=400)
+    except Exception as e:
+        logging.error(f"Error getting thumbnail: {e}")
+        return web.json_response({
+            "success": False,
+            "error": "Failed to fetch thumbnail",
+            "code": 500
+        }, status=500)
+
+@routes.post("/api/topics/clear")
+async def clear_all_topics_api(request):
+    """Clear all topics from database"""
+    try:
+        deleted_count = await db.clear_all_topics()
+        return web.json_response({
+            "success": True,
+            "message": f"Cleared {deleted_count} topics",
+            "deleted_count": deleted_count
+        })
+    except Exception as e:
+        logging.error(f"Error clearing topics: {e}")
+        return web.json_response({
+            "success": False,
+            "error": "Failed to clear topics",
+            "code": 500
+        }, status=500)
 
 # CORS Headers for all responses
 @web.middleware

@@ -11,14 +11,17 @@ id_pattern = re.compile(r'^.\d+$')
 SESSION = environ.get('SESSION', 'Webavbot')
 API_ID = int(environ.get('API_ID', '1357592'))
 API_HASH = environ.get('API_HASH', '7a0b3567c813916acafaa69bf8989f12')
-BOT_TOKEN = environ.get('BOT_TOKEN', "8125185327:AAE5ncCRyEFF_AdPVIvIPzdkjEFF0pKU8bg")
+BOT_TOKEN = environ.get('BOT_TOKEN', "8125185327:AAF19ENE3xxhp5svt2w05Z2PDaqkg93hE_Q")
 BOT_USERNAME = environ.get("BOT_USERNAME", 'CamGrabberInsta_bot') # without @ 
 
 # Admins, Channels & Users
-BIN_CHANNEL = int(environ.get("BIN_CHANNEL", '-1002679595778')) # admin your channel in stream 
-LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1002754242754')) # admin your channel in users log 
+BIN_CHANNEL = int(environ.get("BIN_CHANNEL", '-1002866329325')) # admin your channel in stream 
+LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1002866329325')) # admin your channel in users log 
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '7555349906').split()] # 3567788, 678899, 5889467
 OWNER_USERNAME = environ.get("OWNER_USERNAME", 'BOT_OWNER26') # without @ 
+
+# Group Topics Configuration
+TARGET_GROUP_ID = int(environ.get("TARGET_GROUP_ID", '-1002795956983')) # Group ID for topic fetching
 
 # pics information
 PICS = environ.get('PICS', 'https://envs.sh/_pM.jpg')
@@ -56,8 +59,8 @@ DATABASE_NAME = environ.get('DATABASE_NAME', "cluster0")
 
 # fsub  information
 AUTH_PICS = environ.get('AUTH_PICS', 'https://envs.sh/AwV.jpg')              
-AUTH_CHANNEL = (environ.get("AUTH_CHANNEL", "-1002679595778"))
-FSUB = environ.get("FSUB", True)
+AUTH_CHANNEL = None
+FSUB = False
 
 # port information
 PORT = int(getenv('PORT', '2626'))
