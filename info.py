@@ -11,7 +11,7 @@ id_pattern = re.compile(r'^.\d+$')
 SESSION = environ.get('SESSION', 'Webavbot')
 API_ID = int(environ.get('API_ID', '1357592'))
 API_HASH = environ.get('API_HASH', '7a0b3567c813916acafaa69bf8989f12')
-BOT_TOKEN = environ.get('BOT_TOKEN', "8125185327:AAGiLk-0CC1J_nSdrBe6v5qK7F3NB_HRi6U")
+BOT_TOKEN = environ.get('BOT_TOKEN', "8125185327:AAGI9vI7qtHsLQUaWu2onEZSxxKYt6ra6nM")
 BOT_USERNAME = environ.get("BOT_USERNAME", 'CamGrabberInsta_bot') # without @ 
 
 # Admins, Channels & Users
