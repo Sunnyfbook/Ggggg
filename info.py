@@ -16,7 +16,7 @@ BOT_USERNAME = environ.get("BOT_USERNAME", 'CamGrabberInsta_bot') # without @
 
 # Admins, Channels & Users
 BIN_CHANNEL = int(environ.get("BIN_CHANNEL", '-1002866329325')) # admin your channel in stream 
-LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1002866329325')) # admin your channel in users log 
+LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1003051710521')) # admin your channel in users log 
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '7555349906').split()] # 3567788, 678899, 5889467
 OWNER_USERNAME = environ.get("OWNER_USERNAME", 'BOT_OWNER26') # without @ 
 
