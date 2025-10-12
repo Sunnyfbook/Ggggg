@@ -85,7 +85,7 @@ if 'DYNO' in environ:
     APP_NAME = str(getenv('APP_NAME')) #dont need to fill anything here
 else:
     ON_HEROKU = False
-FQDN = str(getenv('FQDN', 'mmsbee.pp.ua')) if not ON_HEROKU or getenv('FQDN', '') else APP_NAME+'.herokuapp.com'
+FQDN = str(getenv('FQDN', '')) if not ON_HEROKU or getenv('FQDN', '') else APP_NAME+'.herokuapp.com'
 HAS_SSL=bool(getenv('HAS_SSL',True))  # Changed to True for Render
 if HAS_SSL:
     URL = "https://{}/".format(FQDN)
@@ -93,7 +93,7 @@ else:
     URL = "https://{}{}/".format(FQDN, "" if NO_PORT else ":" + str(PORT))
 
 # Netlify Web Interface URL
-NETLIFY_URL = environ.get('NETLIFY_URL', '')
+NETLIFY_URL = environ.get('NETLIFY_URL', 'mmsbee.pp.ua')
       
 #Dont Remove My Credit @AV_BOTz_UPDATE 
 #This Repo Is By @BOT_OWNER26 
