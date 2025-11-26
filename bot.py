@@ -81,10 +81,13 @@ async def start():
     except Exception as e:
         print(f"⚠️ Could not send message to admin: {e}")
         print("ℹ️ This is normal when testing locally. Will work on Render.")
-    app = web.AppRunner(await web_server())
-    await app.setup()
-    bind_address = "0.0.0.0"
-    await web.TCPSite(app, bind_address, PORT).start()
+    # The web server is started separately when running under cPanel/Passenger
+    if not os.environ.get("PASSENGER_APP_ENV"):
+        app = web.AppRunner(await web_server())
+        await app.setup()
+        bind_address = "0.0.0.0"
+        await web.TCPSite(app, bind_address, PORT).start()
+
     await idle()
 
 #Dont Remove My Credit @AV_BOTz_UPDATE 
